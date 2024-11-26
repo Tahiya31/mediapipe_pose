@@ -13,24 +13,97 @@ To use this for your data analysis:
 '''
 
 #import packages/libraries
+
+import subprocess
+import sys
+import os
+import glob
+
 import cv2
 import mediapipe as mp
 import csv
-import os
-import sys
 
-# Function to install mediapipe if not already installed
-def install_mediapipe():
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+# Ensure ffmpeg-python, mediapipe, opencv-python are installed
+
+#installing ffmpeg for windows
+def install_ffmpeg_windows():
+    ffmpeg_url = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+    ffmpeg_zip = "ffmpeg.zip"
+    ffmpeg_dir = "ffmpeg"
+    
     try:
-        import mediapipe as mp
-    except ImportError:
-        print("Mediapipe not found. Installing now...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "mediapipe"])
-        import mediapipe as mp  # Import after installation
-    return mp
+        # Download ffmpeg
+        print("Downloading ffmpeg...")
+        urllib.request.urlretrieve(ffmpeg_url, ffmpeg_zip)
+        
+        # Extract ffmpeg
+        print("Extracting ffmpeg...")
+        with zipfile.ZipFile(ffmpeg_zip, 'r') as zip_ref:
+            zip_ref.extractall(ffmpeg_dir)
+        
+        # Find the bin folder
+        bin_dir = os.path.join(ffmpeg_dir, 'ffmpeg-*-essentials_build', 'bin')
+        bin_dir = glob.glob(bin_dir)[0]  # Assumes only one match
 
-# Ensure mediapipe is installed
-mp = install_mediapipe()
+        # Move the binaries to a known location
+        target_dir = os.path.join(os.environ['USERPROFILE'], 'ffmpeg')
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+
+        for file_name in os.listdir(bin_dir):
+            shutil.move(os.path.join(bin_dir, file_name), target_dir)
+
+        # Add to PATH
+        os.environ["PATH"] += os.pathsep + target_dir
+
+        print("ffmpeg installed successfully on Windows.")
+    except Exception as e:
+        print(f"An error occurred while installing ffmpeg on Windows: {e}")
+    finally:
+        # Clean up
+        if os.path.exists(ffmpeg_zip):
+            os.remove(ffmpeg_zip)
+        if os.path.exists(ffmpeg_dir):
+            shutil.rmtree(ffmpeg_dir)
+
+try:
+    import ffmpeg
+except ImportError:
+    install("ffmpeg-python")
+    import ffmpeg
+
+    if platform.system() == "Windows":
+        install_ffmpeg_windows()
+
+try:
+    import pandas as pd
+except ImportError:
+	install("pandas")
+	import pandas as pd
+	
+try:
+	import scipy
+except ImportError:
+	install("scipy")
+	import scipy
+	from scipy.io.wavfile import read
+	
+
+try:
+    import mediapipe as mp
+except ImportError:
+    install("mediapipe")
+    import mediapipe as mp
+
+try:
+    import cv2
+except ImportError:
+    install("opencv-python")
+    import cv2
+
 
 
 # Set up GPU environment for Mediapipe (specific for Saturn Cloud), if you use some other high performance computing platform check compatibility before usage
