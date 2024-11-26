@@ -90,6 +90,13 @@ except ImportError:
 	
 
 try:
+    import csv
+except ImportError:
+    install("csv")
+    import csv
+    
+    
+try:
     import mediapipe as mp
 except ImportError:
     install("mediapipe")
@@ -100,7 +107,8 @@ try:
 except ImportError:
     install("opencv-python")
     import cv2
-
+    
+ 
 
 
 # Set up GPU environment for Mediapipe (specific for Saturn Cloud), if you use some other high performance computing platform check compatibility before usage
