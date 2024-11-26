@@ -19,9 +19,6 @@ import sys
 import os
 import glob
 
-import cv2
-import mediapipe as mp
-import csv
 
 def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
